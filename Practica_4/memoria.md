@@ -78,7 +78,7 @@ Si detectamos un obstáculo próximo, devolvemos una penalización de `0.5`. En 
 
 ```python
 if mapa[i[1], i[0]] == 0:
-    return 0.5
+    return 1.5
 ```
 
 Esta penalización se incorpora al coste de desplazamiento durante la ejecución de Dijkstra.
@@ -314,5 +314,10 @@ También es posible que la navegación termine si la cola `frontier` queda vací
 
 ## Video Demostrativo
 
-[Screencast from 2026-11-12 18-05-10.webm](https://github.com/user-attachments/assets/c9b2b7ed-a51b-44e9-b480-1ef7ec57445c)
+[Screencast from 2026-11-12 21-39-26.webm](https://github.com/user-attachments/assets/2debcd92-d222-45d1-a075-1f99913f9172)
 
+## Video demostrativo de coreccion de trayectorias
+
+[Screencast from 2026-11-12 21-42-45.webm](https://github.com/user-attachments/assets/74d7d33a-e007-4e99-9d15-98e746f86eca)
+
+He añadido este video ya que se puede observar como en mitad del trazado corrige su trayectoria ya que la penalización a las coordenadas cercanas a obstaculos es demasiado grande para compensar su cercania.
