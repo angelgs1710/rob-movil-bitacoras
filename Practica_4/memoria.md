@@ -220,31 +220,13 @@ Posteriormente, obtenemos la posición actual del robot:
 robot = HAL.getPose3d()
 ```
 
-Calculamos las diferencias de posición:
-
-$$
-dx=x_{\text{objetivo}}-x_{\text{robot}}
-$$
-
-$$
-dy=y_{\text{objetivo}}-y_{\text{robot}}
-$$
-
-La distancia euclídea al objetivo local es:
-
-$$
-d=\sqrt{dx^2+dy^2}
-$$
+Y calculamos la distancia euclídea al objetivo
 
 Cuando esta distancia es inferior a `0.8`, consideramos que hemos alcanzado el punto y pasamos a seleccionar el siguiente.
 
 ### 6.3. Cálculo del error angular
 
-Calculamos el error angular restando la orientación actual del robot:
-
-$$
-e_\theta=\theta_{\text{objetivo}}-\theta_{\text{robot}}
-$$
+Calculamos el error angular restando la orientación actual del robot menos la orientación del objetivo.
 
 Normalizamos este error al intervalo $[-\pi,\pi]$:
 
@@ -257,14 +239,6 @@ Esta normalización permite obtener la diferencia angular más corta, evitando p
 ### 6.4. Control de velocidad lineal
 
 La velocidad lineal se establece en función del error angular y de la distancia al objetivo.
-
-Utilizamos tres situaciones:
-
-| Error angular | Velocidad lineal |
-|---|---|
-| $\lvert e_\theta\rvert > 1.0$ rad | 0.4 |
-| $0.4 < \lvert e_\theta\rvert \leq 1.0$ rad | 0.8 |
-| $\lvert e_\theta\rvert \leq 0.4$ rad | $\min(1.5,1.5d)$ |
 
 En el código:
 
@@ -289,15 +263,11 @@ A diferencia de un control que establece `v = 0` durante los giros, este método
 
 Para controlar la orientación utilizamos un **controlador proporcional**:
 
-$$
-\omega=K_p e_\theta
-$$
-
 Con una ganancia proporcional:
 
-$$
-K_p=1.5
-$$
+```python
+K_p = 1.5
+```
 
 En el código:
 
