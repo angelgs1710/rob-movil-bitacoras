@@ -240,13 +240,7 @@ Cuando esta distancia es inferior a `0.8`, consideramos que hemos alcanzado el p
 
 ### 6.3. Cálculo del error angular
 
-Para orientar el robot hacia el objetivo local, calculamos el ángulo deseado mediante la función `atan2`:
-
-$$
-\theta_{\text{objetivo}}=\operatorname{atan2}(dy,dx)
-$$
-
-Posteriormente, calculamos el error angular restando la orientación actual del robot:
+Calculamos el error angular restando la orientación actual del robot:
 
 $$
 e_\theta=\theta_{\text{objetivo}}-\theta_{\text{robot}}
