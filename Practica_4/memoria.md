@@ -1,5 +1,5 @@
 
-# Global Navigation – Dijkstra
+# Global Navigation
 
 ## 1. Objetivo
 
@@ -66,21 +66,7 @@ Los costes de desplazamiento son:
 | Vertical | 1 |
 | Diagonal | √2 ≈ 1,414 |
 
-El coste diagonal se obtiene mediante la distancia euclídea:
-
-$$
-d=\sqrt{(\Delta x)^2+(\Delta y)^2}
-$$
-
-Para un movimiento diagonal:
-
-$$
-d=\sqrt{1^2+1^2}=\sqrt{2}
-$$
-
 Finalmente, la función devuelve un diccionario donde cada clave representa una posición vecina y su valor corresponde al coste de desplazamiento.
-
-Esta función comprueba los límites del mapa, pero no descarta directamente los obstáculos. Esa comprobación se realiza posteriormente.
 
 ### 3.3. Función `near_obstacles(pose)`
 
@@ -139,23 +125,9 @@ Después obtenemos sus sucesores y descartamos aquellos que:
 - Correspondan a obstáculos.
 - Supongan un movimiento diagonal que atraviese la esquina entre dos celdas ocupadas.
 
-Esta última comprobación evita que Dijkstra considere válidos ciertos desplazamientos diagonales que atravesarían zonas ocupadas.
-
 ### 4.3. Cálculo de las distancias
 
 Para cada sucesor válido calculamos su nuevo coste:
-
-$$
-D_{\text{nuevo}}=D_{\text{actual}}+C_{\text{movimiento}}+P_{\text{obstáculos}}
-$$
-
-Donde:
-
-- $D_{\text{actual}}$: coste acumulado hasta el nodo actual.
-- $C_{\text{movimiento}}$: coste de desplazamiento horizontal, vertical o diagonal.
-- $P_{\text{obstáculos}}$: penalización por proximidad a obstáculos.
-
-En el código:
 
 ```python
 new_dist = dist + dist_succesor + near_obstacles(pose_succesor)
@@ -205,8 +177,6 @@ También intentamos mostrar la matriz de distancias mediante:
 ```python
 WebGUI.showNumpy(weights_map)
 ```
-
-**Limitación:** `weights_map` contiene valores de tipo `float` y posibles `inf`. Si `showNumpy()` exige una imagen de tipo `uint8`, será necesario convertir y limitar los valores antes de visualizarla; esta conversión no afecta al cálculo de Dijkstra.
 
 ## 6. Navegación y control del robot
 
@@ -335,12 +305,6 @@ $$
 K_p=1.5
 $$
 
-Además, limitamos el comando de velocidad angular:
-
-$$
-\omega=\operatorname{clip}(1.5e_\theta,-0.8,0.8)
-$$
-
 En el código:
 
 ```python
@@ -384,40 +348,7 @@ if distancia < 1.0:
 
 También es posible que la navegación termine si la cola `frontier` queda vacía. En ese caso, el programa deja de seleccionar nuevos puntos, aunque esto no implica necesariamente haber alcanzado el objetivo.
 
-## 8. Parámetros utilizados
+## Video Demostrativo
 
-| Parámetro | Valor | Función |
-|---|---|---|
-| Coste horizontal/vertical | 1 | Coste de desplazamiento entre celdas adyacentes. |
-| Coste diagonal | √2 | Coste de desplazamiento diagonal. |
-| Penalización por obstáculos | 0.5 | Incremento del coste cerca de obstáculos. |
-| Tolerancia al punto local | 0.8 | Distancia para avanzar al siguiente punto. |
-| Tolerancia al objetivo final | 1.0 | Distancia para finalizar la navegación. |
-| Velocidad lineal máxima | 1.5 | Límite superior de avance. |
-| Velocidad angular máxima | 0.8 | Límite del módulo del comando angular. |
-| Ganancia angular | 1.5 | Ganancia proporcional para corregir la orientación. |
-| Umbrales angulares | 0.4 y 1.0 rad | Permiten adaptar la velocidad lineal a los giros. |
+[Screencast from 2026-11-12 18-05-10.webm](https://github.com/user-attachments/assets/c9b2b7ed-a51b-44e9-b480-1ef7ec57445c)
 
-## 9. Limitaciones y posibles mejoras
-
-**1. Seguimiento punto a punto.** El robot intenta alcanzar sucesivamente los centros de las celdas seleccionadas. Esto puede provocar correcciones frecuentes de orientación, especialmente en curvas. Una posible mejora sería utilizar un objetivo local adelantado sobre la ruta.
-
-**2. Limitaciones del giro.** Cuando el siguiente punto se encuentra detrás del robot, el controlador intenta corregir el error angular mientras avanza. Si el vehículo tiene un radio mínimo de giro, no siempre será posible alcanzar ese punto. Dijkstra no considera directamente las restricciones cinemáticas del vehículo.
-
-**3. Evitación de obstáculos.** El algoritmo evita las celdas ocupadas conocidas y penaliza las posiciones próximas a obstáculos, pero no incorpora evitación reactiva mediante sensores. Además, aunque la planificación comprueba diagonales que atraviesan esquinas, la selección posterior de vecinos durante el movimiento no repite esa comprobación.
-
-**4. Diferencia entre planificación y seguimiento.** La ruta reconstruida mediante `padres` se utiliza para visualizar Dijkstra, pero el controlador selecciona sus movimientos mediante los costes almacenados en `weights_map`. Por tanto, la trayectoria seguida puede ser diferente de la ruta mostrada.
-
-**5. Finalización y parada.** El código detiene explícitamente el robot cuando alcanza el objetivo. Sin embargo, si termina porque no quedan nodos en `frontier`, no se envía necesariamente una última orden de velocidad cero. Sería conveniente añadir una parada explícita al terminar el bucle, independientemente del motivo de finalización.
-
-## 10. Conclusión
-
-En esta práctica hemos desarrollado un sistema de navegación global basado en el **algoritmo de Dijkstra**, utilizando un mapa de ocupación para calcular los costes de desplazamiento desde el objetivo hasta la posición inicial del robot.
-
-Mediante una cola de prioridad y una matriz de distancias, obtenemos los costes necesarios para seleccionar posiciones que permitan acercarnos al destino, considerando tanto la longitud del desplazamiento como la proximidad a obstáculos.
-
-Posteriormente, implementamos un sistema de control basado en la distancia y el error angular respecto a los puntos seleccionados. Adaptamos la velocidad lineal a la orientación del robot y utilizamos un controlador proporcional para corregir su dirección.
-
-El sistema combina así **planificación global y control de movimiento**. No obstante, el seguimiento punto a punto y la ausencia de restricciones cinemáticas en la planificación pueden dificultar la ejecución de determinadas trayectorias, especialmente aquellas que requieren giros pronunciados.
-
-Como principal línea de mejora, podríamos implementar un seguimiento de trayectoria con puntos adelantados, buscando movimientos más continuos y una mejor adaptación a la geometría del vehículo.
